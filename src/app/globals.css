@@ -1,26 +1,324 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ==================================================================
+   Brand tokens — "The Fine Print, Made Clear"
+   ink   #221F1F  sampled from the VIA wordmark
+   aqua  #A5F1ED  the legacy site's accent (highlighter + seal only)
+   paper #F5F3EE  warm document stock
+   ================================================================== */
+@theme {
+  --color-ink: #221f1f;
+  --color-ink-soft: rgb(34 31 31 / 0.74);
+  --color-ink-faint: rgb(34 31 31 / 0.66);
+  --color-rule: rgb(34 31 31 / 0.14);
+  --color-paper: #f5f3ee;
+  --color-paper-deep: #ece9e1;
+  --color-paper-soft: rgb(245 243 238 / 0.74);
+  --color-paper-rule: rgb(245 243 238 / 0.16);
+  --color-aqua: #a5f1ed;
+
+  /* Fluid type scale (min 16px body everywhere) */
+  --text-display: clamp(2.75rem, 1.2rem + 6.6vw, 9.25rem);
+  --text-display--line-height: 0.94;
+  --text-display--letter-spacing: -0.035em;
+  --text-h1: clamp(2.5rem, 1.5rem + 4.4vw, 6.5rem);
+  --text-h1--line-height: 0.98;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h2: clamp(2.125rem, 1.4rem + 3vw, 4.75rem);
+  --text-h2--line-height: 1.02;
+  --text-h2--letter-spacing: -0.025em;
+  --text-h3: clamp(1.5rem, 1.2rem + 1.25vw, 2.375rem);
+  --text-h3--line-height: 1.12;
+  --text-h3--letter-spacing: -0.015em;
+  --text-lead: clamp(1.125rem, 1rem + 0.45vw, 1.375rem);
+  --text-lead--line-height: 1.55;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.14em;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-quart: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-fraunces), "Times New Roman", serif;
+  --font-sans: var(--font-inter-tight), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    background: var(--color-paper);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-x: clip;
+    min-height: 100svh;
+  }
+  /* Room for the sticky mobile action bar (hidden ≥1280px) */
+  @media (max-width: 1279px) {
+    body {
+      padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+    }
+  }
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-variation-settings: "opsz" 72;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--color-aqua);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  img, svg {
+    display: block;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: clip; }
+
+/* ------------------------------------------------------------------ */
+/* Paper grain — one fixed, static layer (no animation, cheap on mobile) */
+/* ------------------------------------------------------------------ */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ------------------------------------------------------------------ */
+/* Layout + document primitives                                        */
+/* ------------------------------------------------------------------ */
+@utility shell {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  @media (min-width: 768px) { padding-inline: 2.5rem; }
+  @media (min-width: 1280px) { padding-inline: 3.5rem; }
+}
+
+/* Mono "document" label, e.g. DC • MD • VA / 01 */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  text-transform: uppercase;
+  font-weight: 450;
+}
+
+/* Faint ledger ruling for "draft" backgrounds */
+@utility ledger {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(2.5rem - 1px),
+    var(--color-rule) calc(2.5rem - 1px),
+    var(--color-rule) 2.5rem
+  );
+}
+
+/* Neoclassical column rules — thin verticals dividing the grid */
+@utility columns-rules {
+  background-image: linear-gradient(to right, var(--color-rule) 1px, transparent 1px);
+  background-size: calc(100% / 4) 100%;
+  @media (max-width: 767px) { background-size: calc(100% / 2) 100%; }
+}
+
+@layer components {
+/* ------------------------------------------------------------------ */
+/* Review highlight — aqua marker band behind ink text.
+   CSS holds the FINAL state; JS rewinds it and sweeps it in.          */
+/* ------------------------------------------------------------------ */
+.hl {
+  background-image: linear-gradient(var(--color-aqua), var(--color-aqua));
+  background-repeat: no-repeat;
+  background-position: 0 86%;
+  background-size: 100% 0.42em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding-inline: 0.06em;
+  margin-inline: -0.06em;
+}
+.on-ink .hl {
+  color: var(--color-aqua);
+  background-position: 0 100%;
+  background-size: 100% 0.06em;
+}
+
+/* Pen-stroke link underline: draws left→right on hover/focus */
+.pen-link {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 0.6s var(--ease-expo);
+  padding-bottom: 0.1em;
+}
+.pen-link:hover, .pen-link:focus-visible, .pen-link[aria-current="page"] {
+  background-size: 100% 1px;
+}
+.pen-link-static {
+  background-size: 100% 1px;
+}
+.pen-link-static:hover { background-size: 0% 1px; }
+
+/* ------------------------------------------------------------------ */
+/* Buttons                                                             */
+/* ------------------------------------------------------------------ */
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0 1.6rem;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-weight: 560;
+  font-size: 1rem;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color 0.5s var(--ease-expo), border-color 0.5s var(--ease-expo);
+  -webkit-tap-highlight-color: transparent;
+}
+/* fill that sweeps in from the left on hover (transform only) */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.6s var(--ease-expo);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover::before { transform: scaleX(1); transform-origin: left center; }
+}
+.btn:focus-visible::before { transform: scaleX(1); transform-origin: left center; }
+
+.btn-ink { background: var(--color-ink); color: var(--color-paper); }
+.btn-ink::before { background: var(--color-aqua); }
+.btn-ink:hover, .btn-ink:focus-visible { color: var(--color-ink); }
+
+.btn-line { border: 1px solid var(--color-ink); color: var(--color-ink); }
+.btn-line::before { background: var(--color-ink); }
+.btn-line:hover, .btn-line:focus-visible { color: var(--color-paper); }
+
+.btn-aqua { background: var(--color-aqua); color: var(--color-ink); }
+.btn-aqua::before { background: var(--color-paper); }
+
+.btn-line-paper { border: 1px solid var(--color-paper-soft); color: var(--color-paper); }
+.btn-line-paper::before { background: var(--color-paper); }
+.btn-line-paper:hover, .btn-line-paper:focus-visible { color: var(--color-ink); }
+
+.btn-lg { min-height: 3.75rem; padding: 0 2rem; font-size: 1.0625rem; }
+
+/* ------------------------------------------------------------------ */
+/* Form fields — ruled like a paper form                               */
+/* ------------------------------------------------------------------ */
+.field {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  border-radius: 0;
+  padding: 0.6rem 0;
+  font-size: 1rem;
+  color: inherit;
+  transition: border-color 0.3s;
+}
+.field::placeholder { color: inherit; opacity: 0.45; }
+.field:focus { outline: none; border-bottom-width: 2px; }
+.field:focus-visible { outline: none; }
+select.field { appearance: none; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: calc(100% - 12px) 55%, calc(100% - 7px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+select.field option { color: var(--color-ink); }
+
+}
+
+/* ------------------------------------------------------------------ */
+/* Preloader — present in the static HTML so the hero never flashes.   */
+/* Skipped instantly (no JS needed) for repeat visits / reduced motion. */
+/* ------------------------------------------------------------------ */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  /* failsafe: if JS never runs, get out of the way */
+  animation: preloader-failsafe 0s linear 7s forwards;
+}
+html[data-preloaded] .preloader { display: none; }
+@keyframes preloader-failsafe { to { visibility: hidden; opacity: 0; } }
+
+/* ------------------------------------------------------------------ */
+/* Marquee                                                             */
+/* ------------------------------------------------------------------ */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 60s linear infinite;
+}
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* ------------------------------------------------------------------ */
+/* Custom cursor — fine pointers only                                  */
+/* ------------------------------------------------------------------ */
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor, html.has-cursor a, html.has-cursor button, html.has-cursor [role="button"] { cursor: none; }
+  html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor: auto; }
+}
+
+/* Independent vs captive diagrams: full width on phones, height-capped when pinned */
+.ivc-svg { width: 100%; height: auto; }
+@media (min-width: 768px) {
+  .ivc-svg { height: clamp(220px, 34svh, 360px); width: 100%; }
+}
+
+/* Coverage index hover preview (fine pointers only) */
+.coverage-preview { display: none; }
+@media (hover: hover) and (pointer: fine) and (min-width: 1280px) {
+  .coverage-preview { display: block; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced motion — everything is already in its final state in CSS.   */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+  .pen-link, .btn, .btn::before { transition: none; }
+  .preloader { display: none; }
 }
